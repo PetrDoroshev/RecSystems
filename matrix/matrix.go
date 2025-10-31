@@ -1,6 +1,7 @@
 package matrix
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -9,6 +10,17 @@ type Numeric interface {
 	int | int8 | int16 | int32 | int64 |
 		uint | uint8 | uint16 | uint32 | uint64 |
 		float32 | float64
+}
+
+type IMatrix[T Numeric] interface {
+	fmt.Stringer
+
+	Get(row_n int, col_n int) T
+	Set(row_n int, col_n int, val T)
+	GetRow() []T
+	DeleteRow(row_n int) error
+	DeleteColumn(col_n int) error
+	Transpose() *IMatrix[T]
 }
 
 type Matrix[T Numeric] struct {
@@ -118,20 +130,46 @@ func (m *Matrix[T]) GetRow(row_n int) []T {
 	return m.data[row_n]
 }
 
-func (m *Matrix[T]) DeleteRow(row_n int) {
+func (m *Matrix[T]) GetCol(col_n int) []T {
+
+	if m.Rows == 0 {
+		return []T {} 
+	}
+
+	column := make([]T, 0, m.Rows)	
+	
+	for row_n := range m.Rows {
+		column = append(column, m.data[row_n][col_n])
+	}
+	
+	return column
+}
+
+func (m *Matrix[T]) DeleteRow(row_n int) error {
+
+	if row_n > m.Rows-1 || row_n < 0 {
+		return errors.New("row number out of range")
+	}
 
 	m.data = append(m.data[:row_n], m.data[row_n+1:]...)
 	m.Rows--
 
+	return nil
 }
 
-func (m *Matrix[T]) DeleteColumn(col_n int) {
+func (m *Matrix[T]) DeleteColumn(col_n int) error {
+
+	if col_n > m.Cols-1 || col_n < 0 {
+		return errors.New("column number out of range")
+	}
 
 	for i := range m.Rows {
 
 		m.data[i] = append(m.data[i][:col_n], m.data[i][col_n+1:]...)
 	}
 	m.Cols--
+
+	return nil
 }
 
 func (m *Matrix[T]) ToCoordinates() CoordinateList[T] {
@@ -220,4 +258,27 @@ func (m *Matrix[T]) ToELLPACK() ELLPACK[T] {
 	}
 
 	return ellpack
+}
+
+func (m *Matrix[T]) Transpose() *Matrix[T] {
+
+	rows := m.Rows
+	cols := m.Cols
+	transposed_matrix := make([][]T, cols)
+
+	for i := range transposed_matrix {
+		transposed_matrix[i] = make([]T, rows)
+	}
+
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			transposed_matrix[j][i] = m.data[i][j]
+		}
+	}
+
+	return &Matrix[T] {
+
+		data: transposed_matrix,
+		Rows: len(transposed_matrix),
+		Cols: len(transposed_matrix[0]) }
 }

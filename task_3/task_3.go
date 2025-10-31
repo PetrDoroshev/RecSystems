@@ -3,6 +3,7 @@ package main
 import (
 	_ "errors"
 	"fmt"
+	"log"
 	_ "math"
 
 	"github.com/PetrDoroshev/RS/matrix"
@@ -118,7 +119,11 @@ func main() {
 
 		if items_mean_ratings[i] < threshold {
 
-			preference_matrix.DeleteRow(i)
+			err := preference_matrix.DeleteRow(i)
+
+				if (err != nil) {
+				log.Fatalf("%d out of range", i)
+			}
 
 			items_mean_ratings = append(items_mean_ratings[:i], items_mean_ratings[i+1:]...)
 			item_labels = append(item_labels[:i], item_labels[i+1:]...)
@@ -140,7 +145,11 @@ func main() {
 
 		if row_n == preference_matrix.Rows - 1 {
 
-			preference_matrix.DeleteColumn(col_n)
+			err := preference_matrix.DeleteColumn(col_n)
+
+			if (err != nil) {
+				log.Fatalf("%d out of range", row_n)
+			}
 
 			user_labels = append(user_labels[:col_n], user_labels[col_n+1:]...)
 			col_n--
