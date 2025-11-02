@@ -44,7 +44,7 @@ func main() {
 
 	rec_engine.PrintPreferenceMatrix(preferenceMatrix)
 
-	re := rec_engine.RecEngine{PreferenceMatrix: *preferenceMatrix}
+	re := rec_engine.RecEngine[rec_engine.User]{PreferenceMatrix: *preferenceMatrix, Strategy: rec_engine.UserBasedStrategy{}}
 	rating := re.PredictRating(user, item, true)
 
 	fmt.Printf("\nПредстказанный рейтинг товара %s от пользователя %s: %f\n", item, user, rating)
