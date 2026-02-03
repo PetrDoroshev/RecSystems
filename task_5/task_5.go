@@ -22,15 +22,15 @@ func main() {
 
 	m := [][]float64{
 
-		{5, 4, 3, 0, 4, 2, 5, 4, 5, 3, 0},
-		{4, 5, 4, 3, 5, 0, 4, 3, 4, 5, 0},
+		{5, 4, 0, 0, 4, 2, 5, 4, 5, 3, 0},
+		{4, 5, 0, 3, 5, 0, 4, 3, 4, 5, 0},
 		{3, 4, 0, 4, 5, 3, 4, 4, 3, 5, 0},
 		{4, 5, 4, 5, 0, 4, 5, 5, 4, 5, 0},
 		{5, 4, 5, 4, 5, 4, 0, 3, 5, 4, 0},
 		{0, 4, 4, 5, 4, 3, 4, 0, 4, 5, 0},
 		{4, 5, 5, 4, 4, 5, 4, 5, 0, 4, 0},
 		{0, 4, 3, 4, 5, 4, 3, 4, 4, 0, 0},
-		{4, 5, 4, 3, 4, 5, 4, 5, 5, 4, 0},
+		{4, 5, 0, 3, 4, 5, 4, 5, 5, 4, 0},
 		{0, 4, 5, 4, 3, 4, 5, 4, 4, 5, 0}}
 
 	preferenceMatrix, err := matrix.NewKeyedMatrix(*matrix.NewMatrix(m), items, users)
@@ -39,17 +39,17 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
-	user := users[0]
-	item := items[2]
+	user := users[2]
+	//item := items[2]
 
 	rec_engine.PrintPreferenceMatrix(preferenceMatrix)
 
-	re := rec_engine.RecEngine[rec_engine.User]{PreferenceMatrix: *preferenceMatrix, Strategy: rec_engine.UserBasedStrategy{}}
-	rating := re.PredictRating(user, item, true)
+	re := rec_engine.RecEngine[rec_engine.Item]{PreferenceMatrix: *preferenceMatrix, Strategy: rec_engine.ItemBasedStrategy{}}
+	//rating := re.PredictRating(user, item, true)
 
-	fmt.Printf("\nПредстказанный рейтинг товара %s от пользователя %s: %f\n", item, user, rating)
+	//fmt.Printf("\nПредстказанный рейтинг товара %s от пользователя %s: %f\n", item, user, rating)
 
-	recommedations := re.MakeRecommendationTHD(user, 4.0)
+	recommedations := re.MakeRecommendationTHD(user, 2.0)
 
 	fmt.Printf("\nРекомендации для пользователя %s:\n", user)
 	for _, rec := range recommedations {

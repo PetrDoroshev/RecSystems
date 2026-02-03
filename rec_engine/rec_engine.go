@@ -96,64 +96,6 @@ func (re *RecEngine[T]) AvgUserRating(user User) float64 {
 func (re *RecEngine[T]) PredictRating(target_user User, target_item Item, output bool) float64 {
 
 	return re.Strategy.PredictRating(re, target_user, target_item, output)
-	/*
-		var rating float64
-
-		target_user_index := re.PreferenceMatrix.ColKeyToIndex[target_user]
-		target_item_index := re.PreferenceMatrix.RowKeyToIndex[target_item]
-
-		users_to_comp := make([]User, 0, re.PreferenceMatrix.ColsN())
-
-		for col_n := range re.PreferenceMatrix.ColsN() {
-
-			if re.PreferenceMatrix.Get(target_item_index, col_n) != 0 || col_n == target_user_index {
-
-				users_to_comp = append(users_to_comp, re.PreferenceMatrix.ColKeys[col_n])
-			}
-		}
-
-		similarityMatrix := re.buildSimilarityMatrix(users_to_comp)
-
-		if output {
-			fmt.Println("\nМатрица подобия:")
-			PrintSimilarityMatrix(similarityMatrix)
-		}
-
-		nearest_neighbours := []User{}
-		similarity_threshold := 0.65
-
-		for i, dist := range similarityMatrix.GetRowByKey(target_user) {
-
-			u := similarityMatrix.RowKeys[i]
-
-			if dist >= similarity_threshold && u != target_user {
-				nearest_neighbours = append(nearest_neighbours, u)
-			}
-
-		}
-
-		if output {
-			fmt.Println("\nБлижайшие соседи:")
-			fmt.Println(nearest_neighbours)
-		}
-
-		target_user_avg_rating := re.AvgUserRating(target_user)
-		sum_of_dist := 0.0
-		sum_of_rating_diff := 0.0
-
-		for _, u := range nearest_neighbours {
-
-			user_avg_rating := re.AvgUserRating(u)
-
-			sum_of_rating_diff += (re.PreferenceMatrix.GetByKey(target_item, u) - user_avg_rating) * similarityMatrix.GetByKey(target_user, u)
-			sum_of_dist += math.Abs(similarityMatrix.GetByKey(target_user, u))
-
-		}
-
-		rating = target_user_avg_rating + (sum_of_rating_diff / sum_of_dist)
-
-		return rating
-	*/
 }
 
 func (re *RecEngine[T]) getItemPredictedRatings(user User) []ItemRating {
@@ -180,12 +122,9 @@ func (re *RecEngine[T]) MakeRecommendationTHD(user User, threshold float64) []It
 
 	if re.AvgUserRating(user) == 0 {
 
-		fmt.Println(re.AvgUserRating(user))
-
 		for _, item := range re.PreferenceMatrix.RowKeys {
 			recommendations = append(recommendations, ItemRating{Item: item, Rating: re.AvgItemRating(item)})
 		}
-		fmt.Println(recommendations)
 
 	} else {
 		recommendations = re.getItemPredictedRatings(user)
@@ -246,18 +185,18 @@ func PrintPreferenceMatrix[T Numeric](preferenceMatrix *KeyedMatrix[T, Item, Use
 	}
 }
 
-func PrintSimilarityMatrix[T Numeric](similarityMatrix *KeyedMatrix[T, User, User]) {
+func PrintSimilarityMatrix[T Numeric, K Key](similarityMatrix *KeyedMatrix[T, K, K]) {
 
 	fmt.Print("\t")
 	for col_index := range similarityMatrix.ColsN() {
-		fmt.Printf("U%d\t", similarityMatrix.ColKeys[col_index].Id)
+		fmt.Printf("%v\t", similarityMatrix.ColKeys[col_index])
 	}
 
 	fmt.Print("\n")
 
 	for row_index := range similarityMatrix.RowsN() {
 
-		fmt.Printf("U%d\t", similarityMatrix.RowKeys[row_index].Id)
+		fmt.Printf("%v\t", similarityMatrix.RowKeys[row_index])
 
 		for col_index := range similarityMatrix.ColsN() {
 			fmt.Printf("%.2v\t", similarityMatrix.Get(row_index, col_index))
